@@ -1,0 +1,78 @@
+#pragma once
+#include <CoreAudio/AudioServerPlugIn.h>
+
+#define MTS_DEVICE_NAME "@MTS_CONFIG_DEVICE_NAME@"
+#define MTS_MANUFACTURER_NAME "@MTS_CONFIG_MANUFACTURER_NAME@"
+#define MTS_DEFAULT_BOX_NAME "@MTS_CONFIG_DEFAULT_BOX_NAME@"
+#define MTS_BOX_MODEL_NAME "@MTS_CONFIG_BOX_MODEL_NAME@"
+#define MTS_DEVICE_UID "@MTS_CONFIG_DEVICE_UID@"
+#define MTS_BOX_UID "@MTS_CONFIG_BOX_UID@"
+#define MTS_DEVICE_MODEL_UID "@MTS_CONFIG_DEVICE_MODEL_UID@"
+#define MTS_ICON_FILE "@MTS_CONFIG_ICON_FILE@"
+#define MTS_SERIAL_NUMBER "00000001"
+#define MTS_FIRMWARE_VERSION "1.0"
+#define MTS_PLUGIN_BUNDLE_ID "@MTS_CONFIG_BUNDLE_IDENTIFIER@"
+#define MTS_DRIVER_CREATE_PLUGIN @MTS_CONFIG_CREATE_FUNCTION_NAME@
+
+#define MTS_PROPERTY_BOX_ACQUIRED "BoxAcquired"
+#define MTS_PROPERTY_BOX_NAME "BoxName"
+
+namespace mts::config {
+// Device.
+inline constexpr bool allows_default_device = @MTS_CONFIG_ALLOW_DEFAULT_DEVICE@;
+inline constexpr bool hidden = @MTS_CONFIG_HIDDEN_DEVICE@;
+
+// Channels.
+inline constexpr UInt32 channel_count = @MTS_CONFIG_CHANNEL_COUNT@;
+inline constexpr UInt32 bits_per_channel = @MTS_CONFIG_BITS_PER_CHANNEL@;
+inline constexpr UInt32 bytes_per_channel = bits_per_channel / 8;
+inline constexpr UInt32 bytes_per_frame = channel_count * bytes_per_channel;
+inline constexpr UInt32 bytes_per_packet = bytes_per_frame;
+inline constexpr UInt32 frames_per_packet = 1;
+inline constexpr AudioFormatID format_id = kAudioFormatLinearPCM;
+inline constexpr AudioFormatFlags format_flags = kAudioFormatFlagIsFloat | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked;
+
+// Sample rates.
+inline constexpr Float64 supported_sample_rates[] = @MTS_CONFIG_SAMPLE_RATES@;
+inline constexpr UInt32 supported_sample_rates_count = sizeof(supported_sample_rates) / sizeof(Float64);
+inline constexpr Float64 default_sample_rate = @MTS_CONFIG_DEFAULT_SAMPLE_RATE@;
+
+// Volume range.
+inline constexpr Float32 volume_min_db = @MTS_CONFIG_VOLUME_MIN_DB@;
+inline constexpr Float32 volume_max_db = @MTS_CONFIG_VOLUME_MAX_DB@;
+inline constexpr AudioValueRange volume_range_db = { @MTS_CONFIG_VOLUME_MIN_DB@, @MTS_CONFIG_VOLUME_MAX_DB@ };
+inline constexpr Float32 volume_min_amplitude = @MTS_CONFIG_VOLUME_MIN_AMP@;
+
+// Ring buffer.
+inline constexpr UInt32 ring_buffer_size = 16384;
+inline constexpr UInt32 ring_buffer_frame_size = 65536;
+inline constexpr UInt32 ring_buffer_frame_mask = ring_buffer_frame_size - 1;
+
+inline constexpr bool is_supported_sample_rate(Float64 sr) noexcept {
+  for (UInt32 i = 0; i < supported_sample_rates_count; i++) {
+    if (supported_sample_rates[i] == sr) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+inline constexpr bool is_default_sample_rate_supported() {
+  for (size_t i = 0; i < supported_sample_rates_count; i++) {
+    if (default_sample_rate == supported_sample_rates[i]) {
+      return true;
+    }
+  }
+  return false;
+}
+
+inline constexpr bool is_all_sample_rate_integers() {
+  for (size_t i = 0; i < supported_sample_rates_count; i++) {
+    if (size_t(supported_sample_rates[i]) != supported_sample_rates[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+} // namespace mts::config.

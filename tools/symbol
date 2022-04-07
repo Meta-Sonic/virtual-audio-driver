@@ -1,0 +1,79 @@
+#!/bin/bash
+
+CALL_PATH="$(pwd)"
+APP_NAME=$(basename "$0")
+APP_NAME="${APP_NAME%.*}"
+
+print_error_message() {
+    echo "${APP_NAME}: $1"
+    exit 1
+}
+
+# Function: Print help.
+usage() {
+  echo "usage: $(basename "$0") -c <path to config file> -b <path to build folder>"
+}
+
+# Function: Exit and print help.
+exit_with_help() {
+  usage
+  exit 1
+}
+
+get_property() {
+    property=$(sed -nr "/^$1[ ]*=/ { s/[^=]*=[ ]*//; p; q;};" $2)
+
+    # Remove leading whitespaces.
+    property="$(echo -e "${property}" | sed -e 's/^[[:space:]]*//')"
+
+    # Remove trailing whitespaces.
+    property="$(echo -e "${property}" | sed -e 's/[[:space:]]*$//')"
+
+    echo ${property}
+}
+
+POSITIONAL_ARGS=()
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -h|--help)
+            exit_with_help
+            ;;
+
+        -c|--config)
+            CONFIG_PATH="$2"
+            shift # past argument
+            shift # past value
+            ;;
+
+        -b|-build)
+            DEVICE_DIRECTORY="$2"
+            shift # past argument
+            shift # past value
+            ;;
+
+        -*|--*)
+            print_error_message "unknown option $1"
+            ;;
+
+        *)
+            POSITIONAL_ARGS+=("$1") # save positional arg
+            shift # past argument
+            ;;
+    esac
+done
+
+set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
+
+if [ -z ${CONFIG_PATH} ]; then
+    print_error_message "no config path"
+fi
+
+if [ -z ${DEVICE_DIRECTORY} ]; then
+    print_error_message "no build directory"
+fi
+
+driver_name=$(get_property product_name ${CONFIG_PATH})
+
+full_path="${CALL_PATH}/${DEVICE_DIRECTORY}/${driver_name}.driver/Contents/MacOS/${driver_name}"
+nm -gm "$full_path"

@@ -1,0 +1,53 @@
+#!/bin/bash
+
+UUID=$(uuidgen)
+RANDOM_BUNDLE_CIE=$(openssl rand -base64 6 | tr -dc 'a-zA-Z' | tr '[:upper:]' '[:lower:]')
+RANDOM_BUNDLE_SECTION=$(openssl rand -base64 6 | tr -dc 'a-zA-Z' | tr '[:upper:]' '[:lower:]')
+
+echo "Device name:"
+read -r PRODUCT_NAME
+
+echo "#
+product_name = ${PRODUCT_NAME}
+executable_name = ${PRODUCT_NAME}
+manufacturer_name = ${PRODUCT_NAME}
+version = 1.0.0
+version_string = ${PRODUCT_NAME} Version 1.0
+bundle_identifier = com.${RANDOM_BUNDLE_CIE}.${RANDOM_BUNDLE_SECTION}.driver
+
+# Plugin UUID.
+plugin_uid = ${UUID}
+icon_file = DeviceIcon.icns
+copyright = Copyright ${PRODUCT_NAME} 2022. All Rights Reserved.
+
+# Name shown in Audio MIDI Setup.
+device_name = ${PRODUCT_NAME}
+
+box_model_name = ${PRODUCT_NAME}
+
+# Prefix used to generate device, box and device model uids.
+# This must be a valid C++ identifier.
+device_uid_prefix = MTS_DRIVER
+
+# True means that the audio device is a possible selection for
+# kAudioHardwarePropertyDefaultSystemOutputDevice.
+allow_default_device = true
+
+# An hidden device is not included in the normal list of devices provided by
+# kAudioHardwarePropertyDevices nor can it be the default device.
+# Hidden devices can only be discovered by knowing their UID and
+# using kAudioHardwarePropertyDeviceForUID.
+hidden_device = false
+
+# Channels.
+channel_count = 2
+bits_per_channel = 32
+
+# Sample rate.
+sample_rates = { 44100.0, 48000.0, 88200.0, 96000.0, 192000.0 }
+default_sample_rate = 44100.0
+
+# Volume range.
+volume_min_db = -64.0
+volume_max_db = 0.0
+"
